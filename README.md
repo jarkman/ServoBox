@@ -14,4 +14,6 @@ Hardware:
  - Generic click-encoder for UI
  - Adafruit INA219 high-side current & voltage monitor: https://www.adafruit.com/product/904
 
+Early demo: https://photos.app.goo.gl/DCFCsC5bmaDBz76v9
+
 
