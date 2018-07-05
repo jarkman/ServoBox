@@ -59,7 +59,7 @@ void loopServoIn()
   else
   {
     servoInDegrees = -359.0;  
-    Serial.println( servoInDegrees );
+    //Serial.print("Servo in "); Serial.println( servoInDegrees );
   }
 }
 

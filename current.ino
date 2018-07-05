@@ -17,6 +17,9 @@ void setupCurrent(void)
   //ina219.setCalibration_16V_400mA();
 
   //Serial.println("Measuring voltage and current with INA219 ...");
+
+  for( int i = 0; i < U8_Width; i ++ )
+      currentLog[i] = 100;
 }
 
 void loopCurrent(void) 
@@ -29,12 +32,20 @@ void loopCurrent(void)
   busvoltage = ina219.getBusVoltage_V();
   current_mA = ina219.getCurrent_mA();
   loadvoltage = busvoltage + (shuntvoltage / 1000);
-  /*
-  Serial.print("Bus Voltage:   "); Serial.print(busvoltage); Serial.println(" V");
-  Serial.print("Shunt Voltage: "); Serial.print(shuntvoltage); Serial.println(" mV");
-  Serial.print("Load Voltage:  "); Serial.print(loadvoltage); Serial.println(" V");
-  Serial.print("Current:       "); Serial.print(current_mA); Serial.println(" mA");
-  Serial.println("");
-  */
-  
+
+  smoothedCurrent_mA = (1.0-currentSmoother) * smoothedCurrent_mA + currentSmoother * current_mA;
+
+  long now = millis();
+  if( now - lastCurrentLog  > currentLogInterval)
+  {
+    // shift array down
+    for( int i = 0; i < U8_Width - 1; i ++ )
+      currentLog[i] = currentLog[i+1];
+
+    // add new entry
+    currentLog[U8_Width - 1] = smoothedCurrent_mA;  
+    lastCurrentLog = now;
+    
+  }
+
 }

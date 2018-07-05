@@ -106,7 +106,7 @@ using namespace Menu;
   // U8G2_SSD1306_128X64_VCOMH0_F_HW_I2C u8g2(U8G2_R2, U8X8_PIN_NONE, 4, 5);
   //U8G2_SSD1306_128X64_NONAME_1_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 4, 5);
   U8G2_SSD1306_64X48_ER_F_HW_I2C u8g2(U8G2_R0); //wemos shield suport: https://github.com/olikraus/u8g2/wiki/gallery#24-mar-2017-wemos-oled-shield
-
+  // which derives from U8G2 in U8g2lib.h
 #else
   #error DEFINE YOUR OUTPUT HERE.
 #endif
@@ -136,7 +136,13 @@ long servoInUS = -1;
 long lastManualUpdateMs = 0;
 
 float current_mA = 0;
+float smoothedCurrent_mA = 0;
 float loadvoltage = 0;
+float currentSmoother = 0.1;
+
+float currentLog[U8_Width];
+long currentLogInterval = 500;
+long lastCurrentLog = 0;
 
 Servo servoOut;
 
@@ -254,12 +260,82 @@ float microsecondsToDegrees( long microseconds )
   return deg;
 }
 
+class currentGraphPrompt:public prompt {
+public:
+  unsigned int t=0;
+  unsigned int last=0;
+  currentGraphPrompt(constMEM promptShadow& p):prompt(p) {}
+  Used printTo(navRoot &root,bool sel,menuOut& out, idx_t idx,idx_t len,idx_t panelNr) override {
+
+    last=t;
+    
+    gfxOut*g = (gfxOut*)&out;
+   u8g2Out*u = (u8g2Out*)&out;
+
+    // look in u8g2lib.h for these
+    u8g2.setDrawColor(u->getColor(fgColor,sel,enabledStatus,false));
+
+    // look at rect() in u8g2out.h for the source of this position arithmetic
+    const panel p=out.panels[panelNr];
+ 
+    
+    int bottom = (p.y+idx+2) * g->resY; // 2 ? Really ?
+    int height = g->resY;
+    int top = bottom-height;
+    
+    if( bottom < 0 || top >  u8g2.getDisplayHeight())
+    {
+      Serial.println("not drawing");
+      return 0; // not on screen
+    }
+    Serial.print(millis()); Serial.println("- drawing");
+    for( int x = p.x; x < u8g2.getDisplayWidth();x++)
+    {
+      int barHeight = 1 + fmap(currentLog[x], 0.0, 1000.0, 0.0, (float)g->resY);
+      
+      
+      int y = bottom-barHeight;
+      int h = barHeight;
+      /*
+      Serial.print("x ");
+      Serial.print(x);
+      Serial.print(" currentLog[x] ");
+      Serial.println(currentLog[x]);
+      Serial.print(" barHeight ");
+      Serial.println(barHeight);
+      */
+       
+      u8g2.drawVLine(x,y,h);
+    }
+     
+    return 1;
+  }
+  
+  virtual bool changed(const navNode &nav,const menuOut& out,bool sub=true) {
+
+    // is never called!
+    
+    t=millis()/currentLogInterval;
+    if( last!=t )
+    {
+      Serial.println("changed");
+      return true;
+    }
+    else
+    {
+      Serial.println("Not changed");
+      return false;
+    }
+  }
+};
+
 MENU(mainMenu,"ServoBox",doNothing,noEvent,wrapStyle
   ,FIELD(outVal,"Out","",-360,360,10,1, updateOutValFromMenu, enterEvent, noStyle)
   ,FIELD(servoInDegrees,"In","",-360,360,10,1, NULL, enterEvent, noStyle)
+  ,altOP(currentGraphPrompt,"",doNothing,noEvent)
   ,FIELD(outMin,"Min","",-360,360,10,1, updateOutMin, enterEvent, noStyle)
   ,FIELD(outMax,"Max","",-360,360,10,1, updateOutMax, enterEvent, noStyle)
-  ,FIELD(current_mA,"","mA",0,100,10,1, NULL, enterEvent, noStyle)
+  ,FIELD(smoothedCurrent_mA,"","mA",0,100,10,1, NULL, enterEvent, noStyle)
   ,FIELD(loadvoltage,"","V",-3000,3000,10,1, NULL, enterEvent, noStyle)
 );
 
@@ -284,7 +360,7 @@ MENU_INPUTS(in,&serial);
 
 MENU_OUTPUTS(out,MAX_DEPTH
   ,U8G2_OUT(u8g2,colors,fontX,fontY,offsetX,offsetY,{0,0,U8_Width/fontX,U8_Height/fontY})
-  ,SERIAL_OUT(Serial)
+  ,NONE //,SERIAL_OUT(Serial)
 );
 
 NAVROOT(nav,mainMenu,MAX_DEPTH,in,out);
