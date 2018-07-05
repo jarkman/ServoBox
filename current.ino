@@ -45,7 +45,8 @@ void loopCurrent(void)
     // add new entry
     currentLog[U8_Width - 1] = smoothedCurrent_mA;  
     lastCurrentLog = now;
-    
+    setCurrentGraphDirty();
+    numCurrentSamples++;
   }
 
 }

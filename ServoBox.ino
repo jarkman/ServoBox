@@ -143,6 +143,7 @@ float currentSmoother = 0.1;
 float currentLog[U8_Width];
 long currentLogInterval = 500;
 long lastCurrentLog = 0;
+long numCurrentSamples = 0;
 
 Servo servoOut;
 
@@ -285,25 +286,25 @@ public:
     
     if( bottom < 0 || top >  u8g2.getDisplayHeight())
     {
-      Serial.println("not drawing");
+      //Serial.println("not drawing");
       return 0; // not on screen
     }
-    Serial.print(millis()); Serial.println("- drawing");
+    //Serial.print(millis()); Serial.println("- drawing");
     for( int x = p.x; x < u8g2.getDisplayWidth();x++)
     {
       int barHeight = 1 + fmap(currentLog[x], 0.0, 1000.0, 0.0, (float)g->resY);
       
       
-      int y = bottom-barHeight;
+      int y = bottom-barHeight; // actually the top of the bar, as y=0 is at the top
       int h = barHeight;
-      /*
-      Serial.print("x ");
-      Serial.print(x);
-      Serial.print(" currentLog[x] ");
-      Serial.println(currentLog[x]);
-      Serial.print(" barHeight ");
-      Serial.println(barHeight);
-      */
+
+      // make the axis line crawl
+      if( (numCurrentSamples+x)%4 != 0)
+      {
+        y+=1;
+        h-=1;
+      }
+      
        
       u8g2.drawVLine(x,y,h);
     }
@@ -339,6 +340,10 @@ MENU(mainMenu,"ServoBox",doNothing,noEvent,wrapStyle
   ,FIELD(loadvoltage,"","V",-3000,3000,10,1, NULL, enterEvent, noStyle)
 );
 
+void setCurrentGraphDirty()
+{
+  mainMenu[2].dirty=true;
+}
 #define MAX_DEPTH 2
 
 #ifdef USE_ENCODER
