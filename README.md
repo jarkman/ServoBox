@@ -16,4 +16,10 @@ Hardware:
 
 Early demo: https://photos.app.goo.gl/DCFCsC5bmaDBz76v9
 
+Case design in Fusion 360:
+Faceplate: https://a360.co/2mhUQ47
+Baseplate: https://a360.co/2NLKPIZ
+Sides: https://a360.co/2LmklMj
+Knob: https://a360.co/2NOWoiF
+
 
