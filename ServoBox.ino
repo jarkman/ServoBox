@@ -25,6 +25,9 @@
 // ArduinoMenu from https://github.com/neu-rah/ArduinoMenu (but you can get it via the LibraryManager)
 // ClickEncoder from https://github.com/0xPIT/encoder/tree/arduino (which you download yourself)
 
+// Wemos power is via a dc-dc converter from the servo-in power line, providing 5v power to the Wemos
+// Power to the servo-out goes from servo-in power via the INA219, to monitor current & voltage 
+
 #include <Arduino.h>
 
 // required to make the timer to run ClickEncoder on ESP8266
@@ -66,12 +69,12 @@ using namespace Menu;
 //  I2C
 //    D1 SCL
 //    D2 SDA
-//      wired to OLED and to mux and to servo board
+//      wired to OLED and to INA219
 
 // Encoder is on D5 & D6, switch on D4
 
-// Servo out is on D3
-// Servo in is on D7
+// Servo out is on D3 
+// Servo in is on D7 via a 10k resistor
 
 // i2c addresses:
 // Oled   : 0x3C
@@ -138,7 +141,7 @@ long lastManualUpdateMs = 0;
 float current_mA = 0;
 float smoothedCurrent_mA = 0;
 float loadvoltage = 0;
-float currentSmoother = 0.1;
+float currentSmoother = 0.05;
 
 float currentLog[U8_Width];
 long currentLogInterval = 500;
@@ -292,8 +295,9 @@ public:
     //Serial.print(millis()); Serial.println("- drawing");
     for( int x = p.x; x < u8g2.getDisplayWidth();x++)
     {
-      int barHeight = 1 + fmap(currentLog[x], 0.0, 1000.0, 0.0, (float)g->resY);
-      
+      int barHeight = 1 + fmap(currentLog[x], 0.0, 250.0, 0.0, (float)g->resY);
+      if( barHeight < 1 )
+        barHeight = 1;
       
       int y = bottom-barHeight; // actually the top of the bar, as y=0 is at the top
       int h = barHeight;
@@ -347,7 +351,7 @@ void setCurrentGraphDirty()
 #define MAX_DEPTH 2
 
 #ifdef USE_ENCODER
-ClickEncoder clickEncoder(encA,encB,encBtn,2);
+ClickEncoder clickEncoder(encA,encB,encBtn,4);
 ClickEncoderStream encStream(clickEncoder,1);
 MENU_INPUTS(in,&encStream);
 os_timer_t myTimer;
