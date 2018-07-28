@@ -29,7 +29,7 @@ https://photos.app.goo.gl/XPhfDkdazEfEDpcx7
 Case design is in the CAD folder, in Fusion 360 and STL format.
 
 Or, you can find it here:
-Faceplate: https://a360.co/2mhUQ47
-Baseplate: https://a360.co/2NLKPIZ
-Sides: https://a360.co/2LmklMj
-Knob: https://a360.co/2NOWoiF
+ - Faceplate: https://a360.co/2mhUQ47
+ - Baseplate: https://a360.co/2NLKPIZ
+ - Sides: https://a360.co/2LmklMj
+ - Knob: https://a360.co/2NOWoiF
