@@ -9,6 +9,10 @@ For :
 
 Runs on a Wemos D1 Mini Pro 1.1
 
+Uses the fabulous ArduinoMenu from https://github.com/neu-rah/ArduinoMenu
+(but you can get it via the LibraryManager)
+and ClickEncoder from https://github.com/0xPIT/encoder/tree/arduino
+
 Hardware:
  - Wemos OLED shield: https://wiki.wemos.cc/products:d1_mini_shields:oled_shield
  - Generic click-encoder for UI
@@ -21,5 +25,3 @@ Faceplate: https://a360.co/2mhUQ47
 Baseplate: https://a360.co/2NLKPIZ
 Sides: https://a360.co/2LmklMj
 Knob: https://a360.co/2NOWoiF
-
-
